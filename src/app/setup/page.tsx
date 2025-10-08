@@ -149,7 +149,7 @@ export default function SetupPage() {
           {step === 1 && (
             <div className="space-y-4">
               <h3 className="text-lg font-medium text-center mb-6">
-                What type of account are you setting up?
+                What type of service are you offering?
               </h3>
               
               <button
