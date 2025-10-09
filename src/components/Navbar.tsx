@@ -3,27 +3,44 @@
 import { useAuth } from './AuthProvider';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useState } from 'react';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleGoogleLogin = () => {
     window.location.href = 'http://localhost:3000/auth/google';
   };
 
   return (
-    <nav className="bg-white shadow-lg">
+    <nav className="bg-white shadow-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between h-16">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="text-xl font-bold text-indigo-600">
-              Hustler
+            <Link href="/" className="text-2xl font-bold text-indigo-600">
+              EduPlatform
             </Link>
           </div>
 
-          <div className="flex items-center space-x-4">
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            <Link
+              href="/services"
+              className="text-gray-700 hover:text-indigo-600 font-medium transition-colors"
+            >
+              Services
+            </Link>
+            <Link
+              href="/products"
+              className="text-gray-700 hover:text-indigo-600 font-medium transition-colors"
+            >
+              Products
+            </Link>
+            
             {user ? (
-              <>
+              <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-3">
                   {user.picture && (
                     <Image
@@ -34,36 +51,36 @@ export default function Navbar() {
                       className="rounded-full"
                     />
                   )}
-                  <span className="text-gray-700">
+                  <span className="text-gray-700 font-medium">
                     {user.firstName} {user.lastName}
                   </span>
                 </div>
                 
                 <Link
                   href="/profile"
-                  className="text-gray-600 hover:text-indigo-600"
+                  className="text-gray-600 hover:text-indigo-600 transition-colors"
                 >
                   Profile
                 </Link>
                 
                 <Link
                   href={`/dashboard/${user.role || 'student'}`}
-                  className="text-gray-600 hover:text-indigo-600"
+                  className="text-gray-600 hover:text-indigo-600 transition-colors"
                 >
                   Dashboard
                 </Link>
                 
                 <button
                   onClick={logout}
-                  className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                  className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
                 >
                   Logout
                 </button>
-              </>
+              </div>
             ) : (
               <button
                 onClick={handleGoogleLogin}
-                className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 flex items-center space-x-2"
+                className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
@@ -87,7 +104,76 @@ export default function Navbar() {
               </button>
             )}
           </div>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="text-gray-700 hover:text-indigo-600"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
         </div>
+
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="md:hidden border-t border-gray-200 py-4">
+            <div className="flex flex-col space-y-4">
+              <Link
+                href="/services"
+                className="text-gray-700 hover:text-indigo-600 font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Services
+              </Link>
+              <Link
+                href="/products"
+                className="text-gray-700 hover:text-indigo-600 font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Products
+              </Link>
+              
+              {user ? (
+                <>
+                  <Link
+                    href="/profile"
+                    className="text-gray-700 hover:text-indigo-600"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Profile
+                  </Link>
+                  <Link
+                    href={`/dashboard/${user.role || 'student'}`}
+                    className="text-gray-700 hover:text-indigo-600"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setIsMenuOpen(false);
+                    }}
+                    className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 w-fit"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={handleGoogleLogin}
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center space-x-2 w-fit"
+                >
+                  <span>Sign in with Google</span>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   );
