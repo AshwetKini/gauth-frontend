@@ -58,3 +58,39 @@ export interface TestResult {
   message: string;
   nextStep: string;
 }
+
+// Add these to your existing types file
+
+export interface ServiceProvider {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  serviceTitle?: string;
+  serviceDescription?: string;
+  servicePrice?: number;
+  serviceImages?: string[];
+  serviceRating?: number;
+  category?: string;
+  subCategory?: string;
+  picture?: string;
+  email: string;
+}
+
+export interface Product {
+  _id: string;
+  title: string;
+  description: string;
+  price: number;
+  sellerName: string;
+  sellerEmail?: string;
+  images: string[];
+  category: string;
+  rating: number;
+  reviewCount?: number;
+}
+
+export interface FeaturedContent {
+  services: ServiceProvider[];
+  products: Product[];
+}
+
