@@ -94,3 +94,13 @@ export interface FeaturedContent {
   products: Product[];
 }
 
+export interface CategoryItem {
+  _id: string;
+  type: 'service' | 'product';
+  name: string;
+  slug: string;
+  isActive: boolean;
+  order: number;
+}
+
+
