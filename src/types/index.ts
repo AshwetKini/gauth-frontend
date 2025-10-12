@@ -6,8 +6,11 @@ export interface User {
   picture?: string;
   isProfileComplete: boolean;
   role?: 'hustler' | 'student' | 'seller';
-  category?: 'Tutor' | 'IT Services' | 'Design';
-  subCategory?: 'Language' | 'Academic' | 'IT';
+  // Dynamic category system (admin-configurable)
+  category?: string;         // e.g., "Tutor", "IT Services", "Design" (from Expertise category name)
+  subCategory?: string;      // e.g., "Language", "Academic", "IT" (from Expertise subcategory name)
+  categoryId?: string;       // Mongo _id of selected Expertise category
+  subCategoryId?: string;    // Mongo _id of selected Expertise subcategory
   bio?: string;
   introVideo?: string;
   pricing?: number;
@@ -20,14 +23,18 @@ export interface AuthResponse {
   redirectTo: string;
 }
 
+// Setup Profile uses dynamic expertise (admin-managed)
 export interface SetupProfileData {
   role: 'hustler' | 'student' | 'seller';
-  category?: 'Tutor' | 'IT Services' | 'Design';
-  subCategory?: 'Language' | 'Academic' | 'IT';
+  category?: string;       // selected category name (for display and backward compatibility)
+  subCategory?: string;    // selected subcategory name (for display and backward compatibility)
+  categoryId?: string;     // selected Expertise category _id
+  subCategoryId?: string;  // selected Expertise subcategory _id
   bio?: string;
   introVideo?: string;
   pricing?: number;
 }
+
 
 export interface TestQuestion {
   index: number;
@@ -59,7 +66,6 @@ export interface TestResult {
   nextStep: string;
 }
 
-// Add these to your existing types file
 
 export interface ServiceProvider {
   _id: string;
@@ -70,8 +76,10 @@ export interface ServiceProvider {
   servicePrice?: number;
   serviceImages?: string[];
   serviceRating?: number;
-  category?: string;
-  subCategory?: string;
+  category?: string;        // dynamic category name
+  subCategory?: string;     // dynamic subcategory name
+  categoryId?: string;      // dynamic category _id
+  subCategoryId?: string;   // dynamic subcategory _id
   picture?: string;
   email: string;
 }
@@ -94,6 +102,7 @@ export interface FeaturedContent {
   products: Product[];
 }
 
+
 export interface CategoryItem {
   _id: string;
   type: 'service' | 'product';
@@ -104,3 +113,19 @@ export interface CategoryItem {
 }
 
 
+export interface ExpertiseSubcategory {
+  _id: string;
+  name: string;
+  slug: string;
+  description: string;
+  parentId: string; // _id of the parent ExpertiseCategory
+}
+
+export interface ExpertiseCategory {
+  _id: string;
+  name: string;
+  slug: string;
+  description: string;
+  color: string;
+  subcategories: ExpertiseSubcategory[];
+}
