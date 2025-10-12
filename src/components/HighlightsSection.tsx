@@ -43,7 +43,7 @@ const cards: HighlightCard[] = [
     textColor: 'text-blue-600'
   },
   {
-    href: '/what-we-offer',
+    href: '/whatweoffer',
     title: 'What Do We Offer?',
     desc: 'Get the 411 on all the ways you can earn',
     icon: (
