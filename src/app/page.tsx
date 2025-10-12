@@ -1,22 +1,28 @@
 'use client';
-
 import FeaturedServices from '@/components/FeaturedServices';
 import FeaturedProducts from '@/components/FeaturedProducts';
+import HighlightsSection from '@/components/HighlightsSection';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-white">
+    <div>
       {/* Hero */}
-      <section className="max-w-7xl mx-auto px-4 py-16">
-        <div className="text-center mb-10">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Secure the Bag,<span className="text-indigo-600">One Side Gig at a Time</span>
+      <section className="bg-gradient-to-br from-indigo-50 via-white to-cyan-50 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+            Secure the Bag,<br />
+            <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              One Side Gig at a Time
+            </span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Earn cash by Freelancing - because why wait until adulthood to get paid?
           </p>
         </div>
       </section>
+
+      {/* Highlights Section */}
+      <HighlightsSection />
 
       {/* Featured Services */}
       <FeaturedServices />
