@@ -1,13 +1,14 @@
 'use client';
 
-import { useAuth } from './AuthProvider';
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useAuth } from './AuthProvider';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [browseOpen, setBrowseOpen] = useState(false);
 
   const handleGoogleLogin = () => {
     window.location.href = 'http://localhost:3000/auth/google';
@@ -26,19 +27,48 @@ export default function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link
-              href="/services"
-              className="text-gray-700 hover:text-indigo-600 font-medium transition-colors"
-            >
-              Services
-            </Link>
-            <Link
-              href="/products"
-              className="text-gray-700 hover:text-indigo-600 font-medium transition-colors"
-            >
-              Products
-            </Link>
-            
+            {/* Browse Gigs Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setBrowseOpen(open => !open)}
+                className="flex items-center space-x-1 text-gray-700 hover:text-indigo-600 font-medium transition-colors focus:outline-none"
+              >
+                <span>Browse Gigs</span>
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+              {browseOpen && (
+                <div className="absolute mt-2 w-40 bg-white border rounded shadow-lg">
+                  <Link
+                    href="/services"
+                    className="block px-4 py-2 text-gray-700 hover:bg-indigo-50"
+                    onClick={() => setBrowseOpen(false)}
+                  >
+                    Services
+                  </Link>
+                  <Link
+                    href="/products"
+                    className="block px-4 py-2 text-gray-700 hover:bg-indigo-50"
+                    onClick={() => setBrowseOpen(false)}
+                  >
+                    Products
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Auth / User Links */}
             {user ? (
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-3">
@@ -55,21 +85,18 @@ export default function Navbar() {
                     {user.firstName} {user.lastName}
                   </span>
                 </div>
-                
                 <Link
                   href="/profile"
                   className="text-gray-600 hover:text-indigo-600 transition-colors"
                 >
                   Profile
                 </Link>
-                
                 <Link
                   href={`/dashboard/${user.role || 'student'}`}
                   className="text-gray-600 hover:text-indigo-600 transition-colors"
                 >
                   Dashboard
                 </Link>
-                
                 <button
                   onClick={logout}
                   className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
@@ -120,58 +147,59 @@ export default function Navbar() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 py-4">
-            <div className="flex flex-col space-y-4">
-              <Link
-                href="/services"
-                className="text-gray-700 hover:text-indigo-600 font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Services
-              </Link>
-              <Link
-                href="/products"
-                className="text-gray-700 hover:text-indigo-600 font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Products
-              </Link>
-              
-              {user ? (
-                <>
-                  <Link
-                    href="/profile"
-                    className="text-gray-700 hover:text-indigo-600"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Profile
-                  </Link>
-                  <Link
-                    href={`/dashboard/${user.role || 'student'}`}
-                    className="text-gray-700 hover:text-indigo-600"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Dashboard
-                  </Link>
-                  <button
-                    onClick={() => {
-                      logout();
-                      setIsMenuOpen(false);
-                    }}
-                    className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 w-fit"
-                  >
-                    Logout
-                  </button>
-                </>
-              ) : (
+          <div className="md:hidden border-t border-gray-200 py-4 px-4 space-y-4">
+            <button
+              onClick={() => {
+                setBrowseOpen(false);
+                setIsMenuOpen(false);
+                window.location.href = '/services';
+              }}
+              className="w-full text-left text-gray-700 hover:text-indigo-600"
+            >
+              Services
+            </button>
+            <button
+              onClick={() => {
+                setBrowseOpen(false);
+                setIsMenuOpen(false);
+                window.location.href = '/products';
+              }}
+              className="w-full text-left text-gray-700 hover:text-indigo-600"
+            >
+              Products
+            </button>
+            {user ? (
+              <>
                 <button
-                  onClick={handleGoogleLogin}
-                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center space-x-2 w-fit"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    window.location.href = '/profile';
+                  }}
+                  className="w-full text-left text-gray-700 hover:text-indigo-600"
                 >
-                  <span>Sign in with Google</span>
+                  Profile
                 </button>
-              )}
-            </div>
+                <button
+                  onClick={() => {
+                    logout();
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full text-left bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => {
+                  handleGoogleLogin();
+                  setIsMenuOpen(false);
+                }}
+                className="w-full text-left bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
+              >
+                Sign in with Google
+              </button>
+            )}
           </div>
         )}
       </div>
