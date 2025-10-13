@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User, SetupProfileData } from '@/types';
+import { User } from '@/types';
 import api from '@/lib/api';
 import Cookies from 'js-cookie';
 
@@ -10,9 +10,9 @@ interface AuthContextType {
   loading: boolean;
   login: (token: string) => void;
   logout: () => void;
-  setupProfile: (data: SetupProfileData) => Promise<{ redirectTo: string }>;
-  updateProfile: (data: Partial<User>) => Promise<void>;
   fetchProfile: () => Promise<void>;
+  // ADD: role-only setup helper that refreshes profile
+  setupProfile: (data: { role: 'hustler' | 'student' | 'seller' }) => Promise<{ redirectTo: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,17 +23,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = async () => {
     try {
-      const response = await api.get('/auth/profile');
-      setUser(response.data.user);
-    } catch (error) {
-      console.error('Failed to fetch profile:', error);
+      const res = await api.get('/auth/profile');
+      setUser(res.data.user);
+    } catch {
       setUser(null);
     }
   };
 
   const login = (token: string) => {
-    Cookies.set('accessToken', token, { expires: 1 }); // 1 day
-    fetchProfile();
+    Cookies.set('accessToken', token, { expires: 1 });
+    fetchProfile().finally(() => setLoading(false));
   };
 
   const logout = () => {
@@ -42,25 +41,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     window.location.href = '/';
   };
 
-  const setupProfile = async (data: SetupProfileData) => {
-    try {
-      const response = await api.post('/auth/setup', data);
-      await fetchProfile(); // Refresh user data
-      return { redirectTo: response.data.redirectTo };
-    } catch (error) {
-      console.error('Profile setup failed:', error);
-      throw error;
-    }
-  };
-
-  const updateProfile = async (data: Partial<User>) => {
-    try {
-      await api.patch('/auth/profile', data);
-      await fetchProfile(); // Refresh user data
-    } catch (error) {
-      console.error('Profile update failed:', error);
-      throw error;
-    }
+  // NEW: role-only setup that refreshes profile before returning redirect
+  const setupProfile = async (data: { role: 'hustler' | 'student' | 'seller' }) => {
+    const res = await api.post('/auth/setup', data);
+    // Important: refresh frontend state so guards stop redirecting to /setup
+    await fetchProfile();
+    return { redirectTo: res.data.redirectTo as string };
   };
 
   useEffect(() => {
@@ -72,23 +58,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const value = {
-    user,
-    loading,
-    login,
-    logout,
-    setupProfile,
-    updateProfile,
-    fetchProfile,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, loading, login, logout, fetchProfile, setupProfile }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within an AuthProvider');
+  return ctx;
 }
