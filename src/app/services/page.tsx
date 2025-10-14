@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import api from '@/lib/api';
 import { ServiceProvider } from '@/types';
+import FloatingCreateButton from '@/components/FloatingCreateButton';
 
 export default function ServicesPage() {
   const [services, setServices] = useState<ServiceProvider[]>([]);
@@ -10,54 +11,27 @@ export default function ServicesPage() {
   const [q, setQ] = useState('');
   const [category, setCategory] = useState<string>('all');
 
-  // Single source of truth for categories shown in the dropdown
-  const [categories, setCategories] = useState<string[]>(['all']);
-
   useEffect(() => {
-    // Run both loads and unify results
-    Promise.all([loadServiceCategories(), loadAllServices()]).finally(() => setLoading(false));
+    loadAllServices();
   }, []);
 
-  // 1) Load admin-created categories (authoritative)
-  async function loadServiceCategories() {
-    try {
-      const res = await api.get('/public/categories?type=service');
-      const fromAdmin: string[] = (res.data?.data || [])
-        .map((c: any) => c?.name)
-        .filter(Boolean);
-      setCategories(prev => {
-        const union = new Set(prev);
-        fromAdmin.forEach(c => union.add(c));
-        const rest = Array.from(union).filter(x => x !== 'all').sort();
-        return ['all', ...rest];
-      });
-    } catch (e) {
-      console.error('Failed to load admin categories:', e);
-    }
-  }
-
-  // 2) Load services and union any categories found in data (fallback)
-  async function loadAllServices() {
+  const loadAllServices = async () => {
     try {
       const res = await api.get('/public/all-services');
-      const data: ServiceProvider[] = res.data?.data || [];
-      setServices(data);
-
-      const derived = new Set<string>();
-      data.forEach(s => s.category && derived.add(s.category));
-
-      setCategories(prev => {
-        const union = new Set(prev);
-        derived.forEach(c => union.add(c));
-        const rest = Array.from(union).filter(x => x !== 'all').sort();
-        return ['all', ...rest];
-      });
+      setServices(res.data.data || []);
     } catch (e) {
       console.error('Failed to load services:', e);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
-  // Filtering stays the same
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    services.forEach(s => s.category && set.add(s.category));
+    return ['all', ...Array.from(set)];
+  }, [services]);
+
   const filtered = useMemo(() => {
     return services.filter(s => {
       const matchQ =
@@ -92,9 +66,7 @@ export default function ServicesPage() {
             className="w-full md:w-56 border border-gray-300 rounded-md px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
           >
             {categories.map(c => (
-              <option key={c} value={c}>
-                {c === 'all' ? 'All Categories' : c}
-              </option>
+              <option key={c} value={c}>{c === 'all' ? 'All Categories' : c}</option>
             ))}
           </select>
         </div>
@@ -115,6 +87,9 @@ export default function ServicesPage() {
           </div>
         )}
       </div>
+
+      {/* FAB (Hustler only) */}
+      <FloatingCreateButton mode="service" />
     </div>
   );
 }

@@ -3,52 +3,34 @@
 import { useEffect, useMemo, useState } from 'react';
 import api from '@/lib/api';
 import { Product } from '@/types';
+import FloatingCreateButton from '@/components/FloatingCreateButton';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
   const [category, setCategory] = useState<string>('all');
-  const [categories, setCategories] = useState<string[]>(['all']);
 
   useEffect(() => {
-    Promise.all([loadAllProducts(), loadProductCategories()]).finally(() => setLoading(false));
+    loadAllProducts();
   }, []);
 
-  async function loadAllProducts() {
+  const loadAllProducts = async () => {
     try {
       const res = await api.get('/public/all-products');
-      const data: Product[] = res.data.data || [];
-      setProducts(data);
-
-      // union with derived categories as fallback
-      const derived = new Set<string>();
-      data.forEach(p => p.category && derived.add(p.category));
-      setCategories(prev => {
-        const union = new Set(prev);
-        derived.forEach(c => union.add(c));
-        const rest = Array.from(union).filter(x => x !== 'all').sort();
-        return ['all', ...rest];
-      });
+      setProducts(res.data.data || []);
     } catch (e) {
       console.error('Failed to load products:', e);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
-  async function loadProductCategories() {
-    try {
-      const res = await api.get('/public/categories?type=product');
-      const fromAdmin: string[] = (res.data.data || []).map((c: any) => c.name).filter(Boolean);
-      setCategories(prev => {
-        const union = new Set(prev);
-        fromAdmin.forEach(c => union.add(c));
-        const rest = Array.from(union).filter(x => x !== 'all').sort();
-        return ['all', ...rest];
-      });
-    } catch (e) {
-      console.error('Failed to load product categories:', e);
-    }
-  }
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    products.forEach(p => p.category && set.add(p.category));
+    return ['all', ...Array.from(set)];
+  }, [products]);
 
   const filtered = useMemo(() => {
     return products.filter(p => {
@@ -74,7 +56,7 @@ export default function ProductsPage() {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search products..."
+            placeholder="Search products, descriptions..."
             className="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
           />
           <select
@@ -83,9 +65,7 @@ export default function ProductsPage() {
             className="w-full md:w-56 border border-gray-300 rounded-md px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
           >
             {categories.map(c => (
-              <option key={c} value={c}>
-                {c === 'all' ? 'All Categories' : c}
-              </option>
+              <option key={c} value={c}>{c === 'all' ? 'All Categories' : c}</option>
             ))}
           </select>
         </div>
@@ -106,6 +86,9 @@ export default function ProductsPage() {
           </div>
         )}
       </div>
+
+      {/* FAB (Seller only) */}
+      <FloatingCreateButton mode="product" />
     </div>
   );
 }
