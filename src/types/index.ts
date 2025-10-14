@@ -129,3 +129,31 @@ export interface ExpertiseCategory {
   color: string;
   subcategories: ExpertiseSubcategory[];
 }
+
+// Add this interface to your existing types
+export interface Service {
+  _id: string;
+  title: string;
+  description: string;
+  price: number;
+  expertiseArea: string;
+  expertiseId: string;
+  images: string[];
+  rating: number;
+  reviewCount: number;
+  status: 'active' | 'inactive' | 'pending';
+  isFeatured: boolean;
+  views: number;
+  hustlerName: string;
+  hustlerEmail: string;
+  hustlerPicture: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Update ServiceProvider interface to match new Service schema
+export interface ServiceProvider extends Service {
+  hustlerId: string;
+  firstName: string; // for backward compatibility
+  lastName: string;  // for backward compatibility
+}
