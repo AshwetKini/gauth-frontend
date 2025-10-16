@@ -14,6 +14,13 @@ export interface User {
   bio?: string;
   introVideo?: string;
   pricing?: number;
+  isVerifiedHustler?: boolean; // ADD THIS
+  verifiedExpertiseAreas?: string[]; // ADD THIS
+  verificationBadge?: { // ADD THIS
+    earned: boolean;
+    earnedDate: string;
+    expertiseAreas: string[];
+  };
 }
 
 export interface AuthResponse {
@@ -157,3 +164,37 @@ export interface ServiceProvider extends Service {
   firstName: string; // for backward compatibility
   lastName: string;  // for backward compatibility
 }
+
+export interface TestQuestion {
+  _id: string;
+  question: string;
+  options: string[];
+  difficulty: 'easy' | 'medium' | 'hard';
+}
+
+export interface TestAnswer {
+  questionId: string;
+  selectedAnswer: number;
+}
+
+export interface TestResult {
+  testId: string;
+  score: number;
+  passed: boolean;
+  correctAnswers: number;
+  totalQuestions: number;
+  message: string;
+  canCreateService: boolean;
+}
+
+export interface TestHistory {
+  _id: string;
+  expertiseArea: string;
+  score: number;
+  passed: boolean;
+  correctAnswers: number;
+  totalQuestions: number;
+  testDate: string;
+}
+
+
