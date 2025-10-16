@@ -155,10 +155,10 @@ export default function CreateServiceForm({ onSuccess }: CreateServiceFormProps)
         {/* Price */}
         <div>
           <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
-            Price (USD) *
+            Price (Rupees) *
           </label>
           <div className="relative">
-            <span className="absolute left-3 top-2 text-gray-500">$</span>
+            <span className="absolute left-3 top-2 text-gray-500">₹</span>
             <input
               type="number"
               id="price"
