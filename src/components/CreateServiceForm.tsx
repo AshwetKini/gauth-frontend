@@ -258,19 +258,19 @@ export default function CreateServiceForm({ onSuccess }: CreateServiceFormProps)
         {/* Price */}
         <div>
           <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
-            Price (USD) *
+            Price (₹) *
           </label>
           <div className="relative">
-            <span className="absolute left-3 top-2 text-gray-500">$</span>
+            <span className="absolute left-3 top-2 text-gray-500">₹</span>
             <input
               type="number"
               id="price"
               name="price"
               value={formData.price}
               onChange={handleChange}
-              placeholder="0.00"
-              min="0"
-              step="0.01"
+              placeholder="100"
+              min="100"
+              step="1000"
               className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
               required
             />
