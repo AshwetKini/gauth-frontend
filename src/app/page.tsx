@@ -1,7 +1,9 @@
 'use client';
 import FeaturedServices from '@/components/FeaturedServices';
-import FeaturedProducts from '@/components/FeaturedProducts';
+import FeaturedProducts from '@/components/FeaturedProducts';// this shows services, not products
 import HighlightsSection from '@/components/HighlightsSection';
+import FeaturedProductsActual from '@/components/FeaturedProductsActual'; // NEW - shows actual products
+import AllProductsSection from '@/components/AllProductsSection'; // NEW - shows all products
 
 export default function Home() {
   return (
@@ -27,8 +29,14 @@ export default function Home() {
       {/* Featured Services */}
       <FeaturedServices />
 
+       {/* Featured Products - ACTUAL PRODUCTS */}
+      <FeaturedProductsActual />
+
       {/* Featured Products */}
       <FeaturedProducts />
+
+      {/* All Products Section */}
+      <AllProductsSection />
     </div>
   );
 }
