@@ -7,10 +7,11 @@ import { TestQuestion, TestAnswer, TestResult } from '@/types';
 interface TestExamProps {
   expertiseId: string;
   expertiseArea: string;
+  subCategoryId?: string; // ADD THIS PROP
   onTestComplete: (result: TestResult) => void;
 }
 
-export default function TestExam({ expertiseId, expertiseArea, onTestComplete }: TestExamProps) {
+export default function TestExam({ expertiseId, expertiseArea, subCategoryId, onTestComplete }: TestExamProps) {
   const [questions, setQuestions] = useState<TestQuestion[]>([]);
   const [answers, setAnswers] = useState<TestAnswer[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -23,7 +24,7 @@ export default function TestExam({ expertiseId, expertiseArea, onTestComplete }:
   useEffect(() => {
     loadTestQuestions();
     setStartTime(Date.now());
-  }, [expertiseId]);
+  }, [expertiseId, subCategoryId]); // ADD subCategoryId TO DEPENDENCY
 
   // Timer countdown
   useEffect(() => {
@@ -41,18 +42,32 @@ export default function TestExam({ expertiseId, expertiseArea, onTestComplete }:
 
   const loadTestQuestions = async () => {
     try {
-      const res = await api.get(`/test/questions/${expertiseId}`);
+      console.log('Loading test questions for expertise:', expertiseId);
+      console.log('Subcategory ID:', subCategoryId); // DEBUG LOG
+      
+      // UPDATED: Include subcategory in API call
+      const url = subCategoryId 
+        ? `/test/questions/${expertiseId}?subCategoryId=${subCategoryId}`
+        : `/test/questions/${expertiseId}`;
+      
+      console.log('Fetching questions from:', url); // DEBUG LOG
+      
+      const res = await api.get(url);
+      
       if (res.data.success) {
         setQuestions(res.data.data);
+        console.log(`Loaded ${res.data.data.length} questions`); // DEBUG LOG
+        
         // Initialize answers array
         setAnswers(res.data.data.map((q: TestQuestion) => ({
           questionId: q._id,
           selectedAnswer: -1
         })));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load test questions:', error);
-      alert('Failed to load test questions');
+      console.error('Error response:', error.response?.data); // DEBUG LOG
+      alert(error.response?.data?.message || 'Failed to load test questions');
     } finally {
       setLoading(false);
     }
