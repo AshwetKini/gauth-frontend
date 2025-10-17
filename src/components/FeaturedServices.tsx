@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
+import { useRouter } from 'next/navigation';
 
 interface ServiceProvider {
   _id: string;
@@ -21,6 +22,7 @@ export default function FeaturedServices() {
   const [services, setServices] = useState<ServiceProvider[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const router = useRouter();
 
   useEffect(() => {
     loadFeaturedServices();
@@ -115,7 +117,11 @@ export default function FeaturedServices() {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.slice(0, 6).map((service) => (
-            <ServiceCard key={service._id} service={service} />
+            <ServiceCard 
+              key={service._id} 
+              service={service} 
+              onClick={() => router.push(`/services/${service._id}`)}
+            />
           ))}
         </div>
 
@@ -137,11 +143,19 @@ export default function FeaturedServices() {
   );
 }
 
-function ServiceCard({ service }: { service: ServiceProvider }) {
+interface ServiceCardProps {
+  service: ServiceProvider;
+  onClick: () => void;
+}
+
+function ServiceCard({ service, onClick }: ServiceCardProps) {
   const imageUrl = service.serviceImages?.[0] || service.picture || 'https://via.placeholder.com/300x200?text=Service';
   
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+    <div 
+      onClick={onClick}
+      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all cursor-pointer transform hover:-translate-y-1"
+    >
       <img
         src={imageUrl}
         alt={service.serviceTitle || 'Service'}
@@ -152,26 +166,24 @@ function ServiceCard({ service }: { service: ServiceProvider }) {
         }}
       />
       <div className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          {service.serviceTitle}
-        </h3>
-        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+        <h3 className="text-xl font-bold text-gray-900 mb-2">{service.serviceTitle}</h3>
+        <p className="text-gray-600 mb-4 line-clamp-2">
           {service.serviceDescription}
         </p>
-        
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xl font-bold text-indigo-600">
-            {service.servicePrice ? `₹${service.servicePrice}` : 'Contact'}
-          </span>
-          <div className="flex items-center text-sm text-gray-500">
-            <span className="text-yellow-400 mr-1">★</span>
-            <span>{service.serviceRating || 0}</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <span className="text-lg font-bold text-indigo-600">
+              {service.servicePrice ? `₹${service.servicePrice}` : 'Contact'}
+            </span>
+            <div className="flex items-center text-yellow-400">
+              <span>★</span>
+              <span className="text-gray-600 ml-1">{service.serviceRating || 0}</span>
+            </div>
           </div>
         </div>
-        
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-500">{service.category}</span>
-          <span className="text-gray-500">by {service.firstName} {service.lastName}</span>
+        <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
+          <span className="bg-gray-100 px-2 py-1 rounded">{service.category}</span>
+          <span>by {service.firstName} {service.lastName}</span>
         </div>
       </div>
     </div>
