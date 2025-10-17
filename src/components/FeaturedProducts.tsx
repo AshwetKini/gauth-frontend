@@ -1,6 +1,8 @@
-'use client';
+// this page aactually lists services, not products
 
+'use client';
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { ServiceProvider } from '@/types';
 
@@ -8,8 +10,9 @@ export default function ServicesPage() {
   const [services, setServices] = useState<ServiceProvider[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
-  const [category, setCategory] = useState<string>('all');
-  const [categories, setCategories] = useState<string[]>(['all']); // unified categories
+  const [category, setCategory] = useState('all');
+  const [categories, setCategories] = useState(['all']); // unified categories
+  const router = useRouter();
 
   useEffect(() => {
     // load services and categories in parallel
@@ -21,7 +24,6 @@ export default function ServicesPage() {
       const res = await api.get('/public/all-services');
       const data: ServiceProvider[] = res.data.data || [];
       setServices(data);
-
       // derive categories from data as a fallback/union
       const derived = new Set<string>();
       data.forEach(s => s.category && derived.add(s.category));
@@ -66,15 +68,11 @@ export default function ServicesPage() {
   }, [services, q, category]);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-7xl mx-auto px-4">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Services</h1>
-          <p className="text-gray-600">Browse all available services offered by Hustlers</p>
-        </header>
-
-        <div className="bg-white p-4 rounded-lg shadow-sm mb-6 flex flex-col md:flex-row gap-4">
+    <section className="py-16 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
           <input
+            type="text"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search services, tutors, descriptions..."
@@ -93,30 +91,54 @@ export default function ServicesPage() {
           </select>
         </div>
 
-        {loading ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-64 bg-white rounded-lg shadow-sm animate-pulse" />
-            ))}
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">No services found.</div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map(s => (
-              <ServiceCard key={s._id} s={s} />
-            ))}
-          </div>
-        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {loading ? (
+            <>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-lg shadow-md animate-pulse">
+                  <div className="h-48 bg-gray-200 rounded-t-lg"></div>
+                  <div className="p-6 space-y-3">
+                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                  </div>
+                </div>
+              ))}
+            </>
+          ) : filtered.length === 0 ? (
+            <div className="col-span-full text-center py-12">
+              <p className="text-gray-500 text-lg">No services found.</p>
+            </div>
+          ) : (
+            <>
+              {filtered.map(s => (
+                <ServiceCard 
+                  key={s._id} 
+                  s={s} 
+                  onClick={() => router.push(`/services/${s._id}`)}
+                />
+              ))}
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
 
-function ServiceCard({ s }: { s: ServiceProvider }) {
+interface ServiceCardProps {
+  s: ServiceProvider;
+  onClick: () => void;
+}
+
+function ServiceCard({ s, onClick }: ServiceCardProps) {
   const imageUrl = s.serviceImages?.[0] || s.picture || 'https://via.placeholder.com/300x200?text=Service';
+  
   return (
-    <div className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition">
+    <div 
+      onClick={onClick}
+      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all cursor-pointer transform hover:-translate-y-1"
+    >
       <img
         src={imageUrl}
         alt={s.serviceTitle || 'Service'}
@@ -126,14 +148,18 @@ function ServiceCard({ s }: { s: ServiceProvider }) {
           t.src = 'https://via.placeholder.com/300x200?text=Service';
         }}
       />
-      <div className="p-4">
-        <h3 className="text-lg font-semibold text-gray-900 line-clamp-1">{s.serviceTitle || `${s.category} Service`}</h3>
-        <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+      <div className="p-6">
+        <h3 className="text-xl font-bold text-gray-900 mb-2">
+          {s.serviceTitle || `${s.category} Service`}
+        </h3>
+        <p className="text-gray-600 mb-4 line-clamp-2">
           {s.serviceDescription || `Service by ${s.firstName} ${s.lastName}`}
         </p>
         <div className="flex items-center justify-between">
-          <span className="text-indigo-600 font-bold">{s.servicePrice ? `₹${s.servicePrice}` : 'Contact'}</span>
-          <span className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">
+          <span className="text-lg font-bold text-indigo-600">
+            {s.servicePrice ? `₹${s.servicePrice}` : 'Contact'}
+          </span>
+          <span className="text-sm text-gray-500">
             {s.category}{s.subCategory ? ` • ${s.subCategory}` : ''}
           </span>
         </div>
