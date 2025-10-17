@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import TestExam from '@/components/TestExam';
 import TestResult from '@/components/TestResult';
@@ -10,23 +10,24 @@ import { TestResult as TestResultType } from '@/types';
 export default function TestPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [expertiseArea, setExpertiseArea] = useState('');
   const [testResult, setTestResult] = useState<TestResultType | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAlreadyVerified, setIsAlreadyVerified] = useState(false);
 
   const expertiseId = params.expertiseId as string;
+  const subCategoryId = searchParams.get('subCategoryId'); // GET SUBCATEGORY FROM URL
 
   useEffect(() => {
     loadExpertiseInfo();
   }, [expertiseId]);
 
-  // SEPARATE useEffect for checking verification after expertiseArea is loaded
   useEffect(() => {
     if (expertiseArea) {
       checkVerificationStatus();
     }
-  }, [expertiseArea]); // Only run when expertiseArea changes
+  }, [expertiseArea]);
 
   const loadExpertiseInfo = async () => {
     try {
@@ -46,17 +47,16 @@ export default function TestPage() {
   };
 
   const checkVerificationStatus = async () => {
-    if (!expertiseArea) return; // Guard clause to ensure expertiseArea exists
+    if (!expertiseArea) return;
     
     try {
-      console.log('Checking verification for:', expertiseArea); // Debug log
+      console.log('Checking verification for:', expertiseArea);
       const res = await api.get(`/test/verification/${encodeURIComponent(expertiseArea)}`);
       if (res.data.success && res.data.data.isVerified) {
         setIsAlreadyVerified(true);
       }
     } catch (error) {
       console.error('Failed to check verification status:', error);
-      // Don't show error to user as this is not critical
     }
   };
 
@@ -117,6 +117,7 @@ export default function TestPage() {
           <TestExam 
             expertiseId={expertiseId} 
             expertiseArea={expertiseArea}
+            subCategoryId={subCategoryId || undefined} // PASS SUBCATEGORY ID
             onTestComplete={handleTestComplete}
           />
         )}

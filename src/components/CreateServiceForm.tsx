@@ -78,49 +78,56 @@ export default function CreateServiceForm({ onSuccess }: CreateServiceFormProps)
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  if (!formData.title || !formData.description || !formData.price || !formData.expertiseId) {
+    alert('Please fill in all required fields');
+    return;
+  }
+
+  try {
+    setSubmitting(true);
     
-    if (!formData.title || !formData.description || !formData.price || !formData.expertiseId) {
-      alert('Please fill in all required fields');
-      return;
-    }
+    const submitData = {
+      title: formData.title,
+      description: formData.description,
+      price: parseFloat(formData.price),
+      expertiseId: formData.expertiseId,
+      subCategoryId: formData.subCategoryId || undefined,
+    };
 
-    try {
-      setSubmitting(true);
+    const res = await api.post('/hustler/services', submitData);
+    
+    if (res.data.success) {
+      const result = res.data.data;
       
-      const submitData = {
-        title: formData.title,
-        description: formData.description,
-        price: parseFloat(formData.price),
-        expertiseId: formData.expertiseId,
-        subCategoryId: formData.subCategoryId || undefined, // Include subcategory if selected
-      };
-
-      const res = await api.post('/hustler/services', submitData);
-      
-      if (res.data.success) {
-        const result = res.data.data;
+      if (result.needsVerification) {
+        alert(`Service details saved! Now you need to pass the ${result.expertiseArea} verification test to publish your service.`);
         
-        if (result.needsVerification) {
-          alert(`Service details saved! Now you need to pass the ${result.expertiseArea} verification test to publish your service.`);
-          router.push(`/dashboard/hustler/test/${result.expertiseId}?serviceCreated=true`);
+        // UPDATED: Pass subcategory ID in URL
+        const testUrl = formData.subCategoryId 
+          ? `/dashboard/hustler/test/${result.expertiseId}?serviceCreated=true&subCategoryId=${formData.subCategoryId}`
+          : `/dashboard/hustler/test/${result.expertiseId}?serviceCreated=true`;
+        
+        router.push(testUrl);
+      } else {
+        alert('Service created and published successfully!');
+        if (onSuccess) {
+          onSuccess();
         } else {
-          alert('Service created and published successfully!');
-          if (onSuccess) {
-            onSuccess();
-          } else {
-            router.push('/dashboard/hustler');
-          }
+          router.push('/dashboard/hustler');
         }
       }
-    } catch (error: any) {
-      console.error('Failed to create service:', error);
-      alert(error.response?.data?.message || 'Failed to create service');
-    } finally {
-      setSubmitting(false);
     }
-  };
+  } catch (error: any) {
+    console.error('Failed to create service:', error);
+    alert(error.response?.data?.message || 'Failed to create service');
+  } finally {
+    setSubmitting(false);
+  }
+};
+
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
