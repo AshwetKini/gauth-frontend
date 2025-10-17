@@ -270,7 +270,7 @@ export default function CreateServiceForm({ onSuccess }: CreateServiceFormProps)
               onChange={handleChange}
               placeholder="100"
               min="100"
-              step="1000"
+              step="100"
               className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
               required
             />
