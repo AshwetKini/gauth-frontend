@@ -132,7 +132,7 @@ function ServiceCard({ s }: { s: ServiceProvider }) {
           {s.serviceDescription || `Service by ${s.firstName} ${s.lastName}`}
         </p>
         <div className="flex items-center justify-between">
-          <span className="text-indigo-600 font-bold">{s.servicePrice ? `$${s.servicePrice}` : 'Contact'}</span>
+          <span className="text-indigo-600 font-bold">{s.servicePrice ? `₹${s.servicePrice}` : 'Contact'}</span>
           <span className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">
             {s.category}{s.subCategory ? ` • ${s.subCategory}` : ''}
           </span>
