@@ -161,7 +161,7 @@ function ServiceCard({ service }: { service: ServiceProvider }) {
         
         <div className="flex items-center justify-between mb-3">
           <span className="text-xl font-bold text-indigo-600">
-            {service.servicePrice ? `$${service.servicePrice}` : 'Contact'}
+            {service.servicePrice ? `₹${service.servicePrice}` : 'Contact'}
           </span>
           <div className="flex items-center text-sm text-gray-500">
             <span className="text-yellow-400 mr-1">★</span>

@@ -15,7 +15,7 @@ export default function Home() {
               One Side Gig at a Time
             </span>
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg text-green-600 max-w-2xl mx-auto">
             Earn cash by Freelancing - because why wait until adulthood to get paid?
           </p>
         </div>
