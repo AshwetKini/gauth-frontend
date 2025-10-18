@@ -1,74 +1,56 @@
+//this file lists all products on landing page
 'use client';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
-import { ServiceProvider } from '@/types';
+import { Product } from '@/types';
 
-export default function ServicesPage() {
-  const [services, setServices] = useState<ServiceProvider[]>([]);
+export default function AllProductsSection() {
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
   const [category, setCategory] = useState('all');
-  const [categories, setCategories] = useState(['all']);
   const router = useRouter();
 
   useEffect(() => {
-    Promise.all([loadAllServices(), loadServiceCategories()]).finally(() => setLoading(false));
+    loadAllProducts();
   }, []);
 
-  async function loadAllServices() {
+  const loadAllProducts = async () => {
     try {
-      const res = await api.get('/public/all-services');
-      const data: ServiceProvider[] = res.data.data || [];
-      setServices(data);
-      const derived = new Set<string>();
-      data.forEach(s => s.category && derived.add(s.category));
-      setCategories(prev => {
-        const union = new Set(prev);
-        derived.forEach(c => union.add(c));
-        const rest = Array.from(union).filter(x => x !== 'all').sort();
-        return ['all', ...rest];
-      });
+      const res = await api.get('/public/all-products');
+      setProducts(res.data.data || []);
     } catch (e) {
-      console.error('Failed to load services:', e);
+      console.error('Failed to load products:', e);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
-  async function loadServiceCategories() {
-    try {
-      const res = await api.get('/public/categories?type=service');
-      const fromAdmin: string[] = (res.data.data || []).map((c: any) => c.name).filter(Boolean);
-      setCategories(prev => {
-        const union = new Set(prev);
-        fromAdmin.forEach(c => union.add(c));
-        const rest = Array.from(union).filter(x => x !== 'all').sort();
-        return ['all', ...rest];
-      });
-    } catch (e) {
-      console.error('Failed to load admin categories:', e);
-    }
-  }
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    products.forEach(p => p.category && set.add(p.category));
+    return ['all', ...Array.from(set)];
+  }, [products]);
 
   const filtered = useMemo(() => {
-    return services.filter(s => {
+    return products.filter(p => {
       const matchQ =
         !q ||
-        s.firstName?.toLowerCase().includes(q.toLowerCase()) ||
-        s.lastName?.toLowerCase().includes(q.toLowerCase()) ||
-        s.serviceTitle?.toLowerCase().includes(q.toLowerCase()) ||
-        s.serviceDescription?.toLowerCase().includes(q.toLowerCase());
-      const matchCat = category === 'all' || s.category === category;
+        p.title?.toLowerCase().includes(q.toLowerCase()) ||
+        p.description?.toLowerCase().includes(q.toLowerCase()) ||
+        p.sellerName?.toLowerCase().includes(q.toLowerCase());
+      const matchCat = category === 'all' || p.category === category;
       return matchQ && matchCat;
     });
-  }, [services, q, category]);
+  }, [products, q, category]);
 
   return (
-    <section className="py-16 bg-gray-50">
+    <section className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Heading Section - THIS WAS MISSING */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900">Browse Services</h2>
-          <p className="text-gray-600 mt-4">Find the perfect service for your needs</p>
+          <h2 className="text-3xl font-bold text-gray-900">Browse Products</h2>
+          <p className="text-gray-600 mt-4">Shop unique products from our creative sellers</p>
         </div>
 
         <div className="flex flex-col md:flex-row gap-4 mb-8">
@@ -76,7 +58,7 @@ export default function ServicesPage() {
             type="text"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search services, tutors, descriptions..."
+            placeholder="Search products, descriptions..."
             className="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
           />
           <select
@@ -108,15 +90,15 @@ export default function ServicesPage() {
             </>
           ) : filtered.length === 0 ? (
             <div className="col-span-full text-center py-12">
-              <p className="text-gray-500 text-lg">No services found.</p>
+              <p className="text-gray-500 text-lg">No products found.</p>
             </div>
           ) : (
             <>
-              {filtered.slice(0, 6).map(s => (
-                <ServiceCard 
-                  key={s._id} 
-                  s={s} 
-                  onClick={() => router.push(`/services/${s._id}`)}
+              {filtered.slice(0, 6).map(p => (
+                <ProductCard 
+                  key={p._id} 
+                  p={p} 
+                  onClick={() => router.push(`/products/${p._id}`)}
                 />
               ))}
             </>
@@ -126,10 +108,10 @@ export default function ServicesPage() {
         {!loading && filtered.length > 6 && (
           <div className="text-center mt-12">
             <a
-              href="/services"
+              href="/products"
               className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
             >
-              View All Services
+              View All Products
               <svg className="ml-2 -mr-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
@@ -141,13 +123,13 @@ export default function ServicesPage() {
   );
 }
 
-interface ServiceCardProps {
-  s: ServiceProvider;
+interface ProductCardProps {
+  p: Product;
   onClick: () => void;
 }
 
-function ServiceCard({ s, onClick }: ServiceCardProps) {
-  const imageUrl = s.serviceImages?.[0] || s.picture || 'https://via.placeholder.com/300x200?text=Service';
+function ProductCard({ p, onClick }: ProductCardProps) {
+  const imageUrl = p.images?.[0] || 'https://via.placeholder.com/300x200?text=Product';
   
   return (
     <div 
@@ -156,27 +138,22 @@ function ServiceCard({ s, onClick }: ServiceCardProps) {
     >
       <img
         src={imageUrl}
-        alt={s.serviceTitle || 'Service'}
+        alt={p.title}
         className="w-full h-48 object-cover"
         onError={(e) => {
           const t = e.target as HTMLImageElement;
-          t.src = 'https://via.placeholder.com/300x200?text=Service';
+          t.src = 'https://via.placeholder.com/300x200?text=Product';
         }}
       />
       <div className="p-6">
-        <h3 className="text-xl font-bold text-gray-900 mb-2">
-          {s.serviceTitle || `${s.category} Service`}
-        </h3>
-        <p className="text-gray-600 mb-4 line-clamp-2">
-          {s.serviceDescription || `Service by ${s.firstName} ${s.lastName}`}
-        </p>
+        <h3 className="text-xl font-bold text-gray-900 mb-2">{p.title}</h3>
+        <p className="text-gray-600 mb-4 line-clamp-2">{p.description}</p>
         <div className="flex items-center justify-between">
-          <span className="text-lg font-bold text-indigo-600">
-            {s.servicePrice ? `₹${s.servicePrice}` : 'Contact'}
-          </span>
-          <span className="text-sm text-gray-500">
-            {s.category}{s.subCategory ? ` • ${s.subCategory}` : ''}
-          </span>
+          <span className="text-lg font-bold text-indigo-600">₹{p.price}</span>
+          <span className="text-sm text-gray-500">{p.category}</span>
+        </div>
+        <div className="mt-2 text-sm text-gray-500">
+          by {p.sellerName}
         </div>
       </div>
     </div>
